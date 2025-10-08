@@ -1,15 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AudioRecorderPlayer from 'react-native-nitro-sound';
 import { useNavigation } from '@react-navigation/native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withTiming,
+  cancelAnimation,
+} from 'react-native-reanimated';
 
 import Container from '../../components/Container';
 import Text from '../../components/Text';
 import { fonts } from '../../components/helpers/Utils';
 import requestPermissions from '../../utils/Permission';
 import { Duration } from '../../utils/constants';
-import Toast from '../../components/Toast';
 import styles from '../styles';
 
 export default function Recorder() {
@@ -17,6 +23,26 @@ export default function Recorder() {
   const [isPaused, setIsPaused] = useState(false);
   const [recordTime, setRecordTime] = useState('00:00:00');
   const [filePath, setFilePath] = useState(null);
+
+  const scale = useSharedValue(1);
+
+  useEffect(() => {
+    if (isRecording === true && isPaused === false) {
+      if (isPaused === true) {
+        cancelAnimation(scale);
+      } else {
+        scale.value = withRepeat(withTiming(1.1, { duration: 1000 }), -1, true);
+      }
+    } else {
+      cancelAnimation(scale);
+      scale.value = withTiming(1, { duration: 300 });
+    }
+  }, [isRecording, isPaused]);
+
+  const animatedShadow = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    opacity: 0.5,
+  }));
 
   const navigation = useNavigation();
 
@@ -34,7 +60,6 @@ export default function Recorder() {
         setIsRecording(true);
         console.log('Recording started at:', path);
         Duration(setRecordTime);
-        Toast('Record Started');
       } else {
         const stopPath = await AudioRecorderPlayer.stopRecorder();
         setIsRecording(false);
@@ -108,7 +133,7 @@ export default function Recorder() {
       </View>
       <View style={styles.recorder}>
         <View style={styles.shadowContainer}>
-          <View style={styles.shadow} />
+          <Animated.View style={[styles.shadow, animatedShadow]} />
 
           <TouchableOpacity
             activeOpacity={0.9}
@@ -139,6 +164,7 @@ export default function Recorder() {
           )}
         </View>
       </View>
+      <Text style={styles.fileType}>.mp4</Text>
     </Container>
   );
 }

@@ -14,10 +14,10 @@ const styles = StyleSheet.create({
   },
   shadow: {
     position: 'absolute',
-    borderRadius: '50%',
+    borderRadius: 110,
     width: 220,
     height: 220,
-    backgroundColor:'rgba(104, 82, 186, 0.4)',
+    backgroundColor: 'rgba(104, 82, 186, 0.4)',
   },
   recorderIcon: {
     zIndex: 100,
@@ -47,6 +47,12 @@ const styles = StyleSheet.create({
     fontSize: 25,
     color: '#FFF',
     textAlign: 'center',
+  },
+  fileType: {
+    textAlign: 'center',
+    bottom: 100,
+    color: '#ccc',
+    fontSize: 14,
   },
 
   //Player

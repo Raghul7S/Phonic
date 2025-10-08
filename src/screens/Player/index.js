@@ -88,7 +88,7 @@ export default function Player() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
-            <Text style={{ fontSize: 16, marginBottom: 10 }}>Options</Text>
+            <Text style={{color: 'red', fontSize: 14}}>Options</Text>
             <Pressable onPress={() => setModalVisible(false)}>
               <Text style={{ color: 'red', fontSize: 14 }}>Close</Text>
             </Pressable>
