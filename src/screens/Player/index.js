@@ -1,85 +1,146 @@
-import { use, useState } from 'react';
-import { Pressable, ScrollView, View, Modal } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Pressable, View, Modal, FlatList } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Icon from 'react-native-vector-icons/Entypo';
 import Slider from '@react-native-community/slider';
 
+import {
+  handleSelectRecording,
+  playRecording,
+  stopPlay,
+} from '../../utils/PlayerFunctions';
 import Container from '../../components/Container';
 import Text from '../../components/Text';
+import Link from '../../components/TextLink';
 import styles from '../styles';
 
-export default function Player() {
+export default function Player({ route, navigation }) {
+  const { recordedFile } = route.params || {};
+  const [recordings, setRecordings] = useState([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [recordTime, setRecordTime] = useState('00:00:00');
+  const [playProgress, setPlayProgress] = useState(0);
+  const [currentFile, setCurrentFile] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
 
-  const renderItem = () => {
-    return (
-      <Pressable style={styles.list}>
-        <View>
-          <Text style={{ fontSize: 16 }}>
-            {'fileName'}.{'filetype'}
-          </Text>
-          <Text style={{ fontSize: 16 }}>{'date'}</Text>
-        </View>
-        <View style={styles.details}>
-          <View>
-            <Text style={{ fontSize: 16 }}>{'recordTime'}</Text>
-            <Text style={{ fontSize: 16 }}>{'fileSize'}</Text>
-          </View>
-          <Pressable onPress={() => setModalVisible(true)}>
-            <Icon name="dots-three-vertical" size={20} color="#fff" />
-          </Pressable>
-        </View>
-      </Pressable>
+  useEffect(() => {
+    if (recordedFile) {
+      const newRecording = {
+        id: Date.now().toString(),
+        name: recordedFile.split('/').pop(),
+        path: recordedFile,
+        date: new Date().toLocaleString(),
+        duration: '00:00:00',
+      };
+      setRecordings(prev => [newRecording, ...prev]);
+    }
+  }, [recordedFile]);
+
+  const togglePlay = () => {
+    playRecording(
+      isPlaying,
+      setIsPlaying,
+      currentFile,
+      setRecordTime,
+      setPlayProgress,
+      stopPlay
     );
   };
 
+  const renderItem = ({ item }) => (
+    <Pressable
+      style={styles.list}
+      key={item.id}
+      onPress={() =>
+        handleSelectRecording(
+          item,
+          setCurrentFile,
+          setIsPlaying,
+          setRecordTime,
+          setPlayProgress
+        )
+      }
+    >
+      <View>
+        <Text style={{ fontSize: 13 }}>{item.name}</Text>
+        <Text style={{ fontSize: 12 }}>{item.date}</Text>
+      </View>
+      <View style={styles.details}>
+        <Text style={{ fontSize: 13 }}>{item.duration}</Text>
+        <Pressable onPress={() => setModalVisible(true)}>
+          <Icon name="dots-three-vertical" size={18} color="#fff" />
+        </Pressable>
+      </View>
+    </Pressable>
+  );
+
   return (
     <Container style={{ paddingBottom: 0 }} title={'Player'} menuBar={true}>
-      <View style={styles.player}>
-        <View style={styles.playerControls}>
-          <Pressable>
-            <Ionicons name="play-skip-back" size={30} color="#fff" />
-          </Pressable>
-          <Pressable onPress={() => setIsPlaying(!isPlaying)}>
-            {isPlaying ? (
-              <Ionicons name="play" size={30} color="#fff" />
-            ) : (
-              <Ionicons name="pause" size={30} color="#fff" />
-            )}
-          </Pressable>
-          <Pressable>
-            <Ionicons name="play-skip-forward" size={30} color="#fff" />
-          </Pressable>
-          <View style={styles.controller}>
-            <Ionicons name="volume-off" color="#fff" size={20} />
-            <Slider
-              style={{ width: 120, height: 20 }}
-              minimumValue={0}
-              maximumValue={1}
-              minimumTrackTintColor="#fff"
-              maximumTrackTintColor="#ccc"
-              thumbTintColor="#000"
-            />
-            <Ionicons name="volume-high" color="#fff" size={20} />
+      {recordings.length > 0 ? (
+        <>
+          <View style={styles.player}>
+            <View style={styles.playerControls}>
+              <Pressable onPress={() => stopPlay(setIsPlaying, setRecordTime, setPlayProgress)}>
+                <Ionicons name="play-skip-back" size={30} color="#fff" />
+              </Pressable>
+
+              <Pressable onPress={togglePlay}>
+                <Ionicons
+                  name={isPlaying ? 'pause' : 'play'}
+                  size={35}
+                  color="#fff"
+                />
+              </Pressable>
+
+              <Pressable onPress={() => stopPlay(setIsPlaying, setRecordTime, setPlayProgress)}>
+                <Ionicons name="play-skip-forward" size={30} color="#fff" />
+              </Pressable>
+
+              <View style={styles.controller}>
+                <Ionicons name="volume-off" color="#fff" size={20} />
+                <Slider
+                  style={{ width: 120, height: 20 }}
+                  minimumValue={0}
+                  maximumValue={1}
+                  value={0.5}
+                  minimumTrackTintColor="#fff"
+                  maximumTrackTintColor="#ccc"
+                  thumbTintColor="#000"
+                />
+                <Ionicons name="volume-high" color="#fff" size={20} />
+              </View>
+            </View>
+
+            <View style={styles.controller}>
+              <Slider
+                style={{ width: '80%', height: 30 }}
+                minimumValue={0}
+                maximumValue={1}
+                value={playProgress}
+                minimumTrackTintColor="#fff"
+                maximumTrackTintColor="#ccc"
+                thumbTintColor="#000"
+              />
+              <Text style={{ fontSize: 14 }}>{recordTime}</Text>
+            </View>
           </View>
-        </View>
-        <View style={styles.controller}>
-          <Slider
-            style={{ width: '80%', height: 30 }}
-            minimumValue={0}
-            maximumValue={1}
-            minimumTrackTintColor="#fff"
-            maximumTrackTintColor="#ccc"
-            thumbTintColor="#000"
+
+          <FlatList
+            data={recordings}
+            renderItem={renderItem}
+            keyExtractor={item => item.id}
+            showsVerticalScrollIndicator={false}
           />
-          <Text style={{ fontSize: 14 }}>{recordTime}</Text>
+        </>
+      ) : (
+        <View style={styles.center}>
+          <Text>Nothing to play</Text>
+          <Link onPress={() => navigation.navigate('Recorder')} link>
+            Record now
+          </Link>
         </View>
-      </View>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {renderItem()}
-      </ScrollView>
+      )}
+
       <Modal
         animationType="fade"
         transparent={true}
@@ -88,7 +149,7 @@ export default function Player() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
-            <Text style={{color: 'red', fontSize: 14}}>Options</Text>
+            <Text style={{ color: 'red', fontSize: 14 }}>Options</Text>
             <Pressable onPress={() => setModalVisible(false)}>
               <Text style={{ color: 'red', fontSize: 14 }}>Close</Text>
             </Pressable>

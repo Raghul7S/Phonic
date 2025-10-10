@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 import { fonts } from '../components/helpers/Utils';
 
 const styles = StyleSheet.create({
-  recorder: {
+  center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
@@ -48,11 +48,13 @@ const styles = StyleSheet.create({
     color: '#FFF',
     textAlign: 'center',
   },
-  fileType: {
-    textAlign: 'center',
-    bottom: 100,
-    color: '#ccc',
-    fontSize: 14,
+  DeleteIcon: {
+    alignSelf: 'center',
+    position: 'absolute',
+    bottom: 60,
+    backgroundColor: '#6852ba',
+    borderRadius: 50,
+    padding: 10,
   },
 
   //Player
@@ -60,12 +62,14 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingVertical: 30,
     paddingHorizontal: 10,
+    marginBottom: 2,
     backgroundColor: '#6852ba',
     borderStartEndRadius: 15,
     borderEndEndRadius: 15,
   },
   playerControls: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
   },
   controller: {

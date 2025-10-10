@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import AudioRecorderPlayer from 'react-native-nitro-sound';
 import { useNavigation } from '@react-navigation/native';
 import Animated, {
   useSharedValue,
@@ -14,9 +13,13 @@ import Animated, {
 import Container from '../../components/Container';
 import Text from '../../components/Text';
 import { fonts } from '../../components/helpers/Utils';
-import requestPermissions from '../../utils/Permission';
-import { Duration } from '../../utils/constants';
 import styles from '../styles';
+import {
+  startRecording,
+  pauseRecording,
+  stopRecording,
+  cancelRecording,
+} from '../../utils/RecorderFunctions';
 
 export default function Recorder() {
   const [isRecording, setIsRecording] = useState(false);
@@ -25,6 +28,7 @@ export default function Recorder() {
   const [filePath, setFilePath] = useState(null);
 
   const scale = useSharedValue(1);
+  const navigation = useNavigation();
 
   useEffect(() => {
     if (isRecording === true && isPaused === false) {
@@ -44,63 +48,26 @@ export default function Recorder() {
     opacity: 0.5,
   }));
 
-  const navigation = useNavigation();
-
-  const startRecording = async () => {
-    const hasPermission = await requestPermissions();
-    if (!hasPermission) {
-      console.log('Permission denied');
-      return;
-    }
-
-    try {
-      if (!isRecording) {
-        const path = await AudioRecorderPlayer.startRecorder();
-        setFilePath(path);
-        setIsRecording(true);
-        console.log('Recording started at:', path);
-        Duration(setRecordTime);
-      } else {
-        const stopPath = await AudioRecorderPlayer.stopRecorder();
-        setIsRecording(false);
-        setIsPaused(false);
-        setRecordTime('00:00:00');
-        console.log('Recording stopped. Saved at:', stopPath);
-      }
-    } catch (err) {
-      console.log('Recording error:', err);
-    }
+  const handleStartRecording = () => {
+    startRecording(isRecording, setFilePath, setIsRecording, setRecordTime);
   };
 
-  const pauseRecording = async () => {
-    try {
-      if (!isPaused) {
-        await AudioRecorderPlayer.pauseRecorder();
-        setIsPaused(true);
-        console.log('Recording paused');
-      } else {
-        await AudioRecorderPlayer.resumeRecorder();
-        setIsPaused(false);
-        console.log('Recording resumed');
-      }
-    } catch (err) {
-      console.log('Pause/Resume error:', err);
-    }
+  const handlePauseRecording = () => {
+    pauseRecording(isPaused, setIsPaused);
   };
 
-  const stopRecording = async () => {
-    try {
-      const stopPath = await AudioRecorderPlayer.stopRecorder();
-      setIsRecording(false);
-      setIsPaused(false);
-      setRecordTime('00:00:00');
-      setFilePath(stopPath);
+  const handleStopRecording = () => {
+    stopRecording(
+      setIsRecording,
+      setIsPaused,
+      setRecordTime,
+      setFilePath,
+      navigation,
+    );
+  };
 
-      navigation.navigate('Player', { recordedFile: stopPath });
-      console.log('Recording stopped. Saved at:', stopPath);
-    } catch (err) {
-      console.log('Recording error:', err);
-    }
+  const handleCancelRecording = () => {
+    cancelRecording(setIsRecording, setIsPaused, setRecordTime, setFilePath);
   };
 
   return (
@@ -110,61 +77,62 @@ export default function Recorder() {
           {recordTime}
         </Text>
         <View style={[styles.controller, { top: 20 }]}>
-          <Text style={styles.guide}>Press the</Text>
-          {isRecording ? (
-            <Ionicons
-              name="square"
+          <Text style={styles.guide}>Press</Text>
+          <Ionicons
+              name={isRecording === true ? 'square' : 'mic'}
               size={15}
               color="#fff"
               style={{ marginHorizontal: 5 }}
             />
-          ) : (
-            <Ionicons
-              name="mic"
-              size={15}
-              color="#fff"
-              style={{ marginHorizontal: 5 }}
-            />
-          )}
           <Text style={styles.guide}>
-            to {isRecording ? 'stop' : 'start'} recording
+            to {isRecording === true ? 'finish' : 'start'} recording
           </Text>
         </View>
       </View>
-      <View style={styles.recorder}>
+      <View style={styles.center}>
         <View style={styles.shadowContainer}>
           <Animated.View style={[styles.shadow, animatedShadow]} />
 
           <TouchableOpacity
             activeOpacity={0.9}
-            onPress={isRecording === true ? stopRecording : startRecording}
+            onPress={
+              isRecording === true ? handleStopRecording : handleStartRecording
+            }
             style={styles.recorderIcon}
             distance={40}
             startColor={'#fff'}
           >
-            {isRecording ? (
-              <Ionicons name="square" size={100} color="#fff" />
-            ) : (
-              <Ionicons name="mic" size={100} color="#fff" />
-            )}
+            <Ionicons
+              name={isRecording === true ? 'square' : 'mic'}
+              size={100}
+              color="#fff"
+            />
           </TouchableOpacity>
 
-          {isRecording && (
+          {isRecording === true && (
             <TouchableOpacity
-              onPress={pauseRecording}
+              onPress={handlePauseRecording}
               activeOpacity={1}
               style={styles.pauseIcon}
             >
-              {isPaused ? (
-                <Ionicons name="play" size={40} color="#fff" />
-              ) : (
-                <Ionicons name="pause" size={40} color="#fff" />
-              )}
+              <Ionicons
+                name={isPaused ? 'play' : 'pause'}
+                size={45}
+                color="#fff"
+              />
             </TouchableOpacity>
           )}
         </View>
       </View>
-      <Text style={styles.fileType}>.mp4</Text>
+      {isRecording === true && (
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={styles.DeleteIcon}
+          onPress={handleCancelRecording}
+        >
+          <Ionicons name="trash-outline" size={30} color="#fff" />
+        </TouchableOpacity>
+      )}
     </Container>
   );
 }

@@ -19,6 +19,14 @@ const styles = StyleSheet.create({
         fontSize: 24,
         color: '#fff',
         fontFamily: fonts.medium
+    },
+    link: {
+        fontSize: 14,
+        borderBottomWidth: 1,
+        borderColor: '#6852ba',
+        color: '#6852ba',
+        letterSpacing: 5,
+        marginTop: 10
     }
 });
 
