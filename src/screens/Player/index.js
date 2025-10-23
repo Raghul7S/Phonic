@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Pressable, View, Modal, FlatList } from 'react-native';
+import { Pressable, View, FlatList } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Icon from 'react-native-vector-icons/Entypo';
 import Slider from '@react-native-community/slider';
@@ -10,6 +10,7 @@ import {
   stopPlay,
 } from '../../utils/PlayerFunctions';
 import Container from '../../components/Container';
+import Modal from '../../components/Modal';
 import Text from '../../components/Text';
 import Link from '../../components/TextLink';
 import styles from '../styles';
@@ -22,6 +23,7 @@ export default function Player({ route, navigation }) {
   const [playProgress, setPlayProgress] = useState(0);
   const [currentFile, setCurrentFile] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [selectedRecording, setSelectedRecording] = useState(null);
 
   useEffect(() => {
     if (recordedFile) {
@@ -43,7 +45,7 @@ export default function Player({ route, navigation }) {
       currentFile,
       setRecordTime,
       setPlayProgress,
-      stopPlay
+      stopPlay,
     );
   };
 
@@ -57,7 +59,7 @@ export default function Player({ route, navigation }) {
           setCurrentFile,
           setIsPlaying,
           setRecordTime,
-          setPlayProgress
+          setPlayProgress,
         )
       }
     >
@@ -67,12 +69,21 @@ export default function Player({ route, navigation }) {
       </View>
       <View style={styles.details}>
         <Text style={{ fontSize: 13 }}>{item.duration}</Text>
-        <Pressable onPress={() => setModalVisible(true)}>
+        <Pressable onPress={() => {
+          setSelectedRecording(item);
+          setModalVisible(true);
+        }}>
           <Icon name="dots-three-vertical" size={18} color="#fff" />
         </Pressable>
       </View>
     </Pressable>
   );
+
+  const options = [
+    {id:1, label: 'Rename', action: () => {}},
+    {id: 2, label: 'Share', action: () => {}},
+    {id: 3, label: 'Delete', action: () => {}},
+  ]
 
   return (
     <Container style={{ paddingBottom: 0 }} title={'Player'} menuBar={true}>
@@ -80,7 +91,11 @@ export default function Player({ route, navigation }) {
         <>
           <View style={styles.player}>
             <View style={styles.playerControls}>
-              <Pressable onPress={() => stopPlay(setIsPlaying, setRecordTime, setPlayProgress)}>
+              <Pressable
+                onPress={() =>
+                  stopPlay(setIsPlaying, setRecordTime, setPlayProgress)
+                }
+              >
                 <Ionicons name="play-skip-back" size={30} color="#fff" />
               </Pressable>
 
@@ -92,7 +107,11 @@ export default function Player({ route, navigation }) {
                 />
               </Pressable>
 
-              <Pressable onPress={() => stopPlay(setIsPlaying, setRecordTime, setPlayProgress)}>
+              <Pressable
+                onPress={() =>
+                  stopPlay(setIsPlaying, setRecordTime, setPlayProgress)
+                }
+              >
                 <Ionicons name="play-skip-forward" size={30} color="#fff" />
               </Pressable>
 
@@ -140,22 +159,12 @@ export default function Player({ route, navigation }) {
           </Link>
         </View>
       )}
-
       <Modal
-        animationType="fade"
-        transparent={true}
         visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={{ color: 'red', fontSize: 14 }}>Options</Text>
-            <Pressable onPress={() => setModalVisible(false)}>
-              <Text style={{ color: 'red', fontSize: 14 }}>Close</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
+        title={selectedRecording?.name}
+        message={options}
+        onClose={() => setModalVisible(false)}
+      />
     </Container>
   );
 }
