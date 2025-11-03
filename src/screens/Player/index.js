@@ -3,6 +3,8 @@ import { Pressable, View, FlatList } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Icon from 'react-native-vector-icons/Entypo';
 import Slider from '@react-native-community/slider';
+import Share from 'react-native-share';
+import RNFS from 'react-native-fs';
 
 import {
   handleSelectRecording,
@@ -49,6 +51,34 @@ export default function Player({ route, navigation }) {
     );
   };
 
+  const shareAudio = async () => {
+    try {
+      const filePath = selectedRecording.path;
+      const fileName = selectedRecording.name || 'recording.mp4';
+      const destPath = `${RNFS.TemporaryDirectoryPath}/${fileName}`;
+
+      console.log('Copying file to shareable path:', destPath);
+
+      await RNFS.copyFile(filePath, destPath);
+
+      const shareOptions = {
+        title: 'Share audio',
+        url: 'file://' + destPath,
+        type: 'audio/mp4',
+      };
+
+      await Share.open(shareOptions);
+      setModalVisible(false);
+    } catch (error) {
+      console.log('Error sharing recording:', error);
+    }
+  };
+
+  const deleteAudio = () => {
+    setRecordings(prev => prev.filter(rec => rec.id !== selectedRecording.id));
+    setModalVisible(false);
+  };
+
   const renderItem = ({ item }) => (
     <Pressable
       style={styles.list}
@@ -82,9 +112,21 @@ export default function Player({ route, navigation }) {
   );
 
   const options = [
-    { id: 1, label: 'Rename', action: () => {} },
-    { id: 2, label: 'Share', action: () => {} },
-    { id: 3, label: 'Delete', action: () => {} },
+    {
+      id: 1,
+      label: 'Rename',
+      action: () => console.log('Rename action triggered'),
+    },
+    {
+      id: 2,
+      label: 'Share',
+      action: shareAudio,
+    },
+    {
+      id: 3,
+      label: 'Delete',
+      action: deleteAudio,
+    },
   ];
 
   return (
@@ -166,6 +208,19 @@ export default function Player({ route, navigation }) {
         title={selectedRecording?.name}
         message={options}
         onClose={() => setModalVisible(false)}
+        onSelect={action => {
+          switch (action) {
+            case options[0].action:
+              console.log('Rename action triggered');
+              break;
+            case options[1].action:
+              action();
+              break;
+            case options[2].action:
+              action();
+              break;
+          }
+        }}
       />
     </Container>
   );

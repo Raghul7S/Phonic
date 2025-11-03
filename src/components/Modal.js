@@ -28,7 +28,7 @@ export default function CustomModal({
             renderItem={({ item }) => (
               <Pressable
                 style={styles.optionItem}
-                onPress={() => onSelect(item.action)}
+                onPressOut={() => onSelect(item.action)}
               >
                 <Text style={styles.message}>{item.label}</Text>
               </Pressable>
