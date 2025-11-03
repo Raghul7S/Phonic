@@ -69,10 +69,12 @@ export default function Player({ route, navigation }) {
       </View>
       <View style={styles.details}>
         <Text style={{ fontSize: 13 }}>{item.duration}</Text>
-        <Pressable onPress={() => {
-          setSelectedRecording(item);
-          setModalVisible(true);
-        }}>
+        <Pressable
+          onPress={() => {
+            setSelectedRecording(item);
+            setModalVisible(true);
+          }}
+        >
           <Icon name="dots-three-vertical" size={18} color="#fff" />
         </Pressable>
       </View>
@@ -80,10 +82,10 @@ export default function Player({ route, navigation }) {
   );
 
   const options = [
-    {id:1, label: 'Rename', action: () => {}},
-    {id: 2, label: 'Share', action: () => {}},
-    {id: 3, label: 'Delete', action: () => {}},
-  ]
+    { id: 1, label: 'Rename', action: () => {} },
+    { id: 2, label: 'Share', action: () => {} },
+    { id: 3, label: 'Delete', action: () => {} },
+  ];
 
   return (
     <Container style={{ paddingBottom: 0 }} title={'Player'} menuBar={true}>

@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  Modal,
-  View,
-  TouchableOpacity,
-  Pressable,
-  FlatList,
-} from 'react-native';
+import { Modal, View, Pressable, FlatList } from 'react-native';
 
 import Text from '../components/Text';
 import styles from './styles';
@@ -16,11 +10,11 @@ export default function CustomModal({
   message = [],
   onClose,
   onConfirm,
+  onSelect,
 }) {
-    console.log("Modal message:", message);
   return (
     <Modal
-      animationType="fade"
+      animationType="slide"
       transparent={true}
       visible={visible}
       onRequestClose={onClose}
@@ -32,29 +26,29 @@ export default function CustomModal({
             data={message}
             keyExtractor={item => item.id}
             renderItem={({ item }) => (
-              <TouchableOpacity
+              <Pressable
                 style={styles.optionItem}
                 onPress={() => onSelect(item.action)}
               >
                 <Text style={styles.message}>{item.label}</Text>
-              </TouchableOpacity>
+              </Pressable>
             )}
           />
 
           <View style={styles.buttonRow}>
             {onClose && (
-              <TouchableOpacity onPress={onClose} style={styles.button}>
+              <Pressable onPress={onClose} style={styles.button}>
                 <Text style={styles.cancelText}>Close</Text>
-              </TouchableOpacity>
+              </Pressable>
             )}
 
             {onConfirm && (
-              <TouchableOpacity
+              <Pressable
                 onPress={onConfirm}
                 style={[styles.button, styles.confirmButton]}
               >
                 <Text style={styles.confirmText}>OK</Text>
-              </TouchableOpacity>
+              </Pressable>
             )}
           </View>
         </View>
