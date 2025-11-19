@@ -15,10 +15,11 @@ import Container from '../../components/Container';
 import Modal from '../../components/Modal';
 import Text from '../../components/Text';
 import Link from '../../components/TextLink';
+import { loadRecording, saveRecordings } from '../../utils/storage';
 import styles from '../styles';
 
 export default function Player({ route, navigation }) {
-  const { recordedFile } = route.params || {};
+  const { recordedFile, duration } = route.params || {};
   const [recordings, setRecordings] = useState([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [recordTime, setRecordTime] = useState('00:00:00');
@@ -34,11 +35,23 @@ export default function Player({ route, navigation }) {
         name: recordedFile.split('/').pop(),
         path: recordedFile,
         date: new Date().toLocaleString(),
-        duration: '00:00:00',
+        duration: duration,
       };
-      setRecordings(prev => [newRecording, ...prev]);
+      setRecordings(prev => {
+        const updated = [newRecording, ...prev];
+        saveRecordings(updated);
+        return updated;
+      });
     }
   }, [recordedFile]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      const stored = await loadRecording();
+      setRecordings(stored);
+    };
+    loadData();
+  }, []);
 
   const togglePlay = () => {
     playRecording(
@@ -50,6 +63,8 @@ export default function Player({ route, navigation }) {
       stopPlay,
     );
   };
+
+  const handleRename = () => {};
 
   const shareAudio = async () => {
     try {
@@ -75,7 +90,12 @@ export default function Player({ route, navigation }) {
   };
 
   const deleteAudio = () => {
-    setRecordings(prev => prev.filter(rec => rec.id !== selectedRecording.id));
+    setRecordings(prev => {
+      const updated = prev.filter(rec => rec.id !== selectedRecording.id);
+      saveRecordings(updated);
+      return updated;
+    });
+
     setModalVisible(false);
   };
 
@@ -115,7 +135,7 @@ export default function Player({ route, navigation }) {
     {
       id: 1,
       label: 'Rename',
-      action: () => console.log('Rename action triggered'),
+      action: handleRename,
     },
     {
       id: 2,

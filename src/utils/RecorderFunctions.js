@@ -8,6 +8,7 @@ export const startRecording = async (
   setFilePath,
   setIsRecording,
   setRecordTime,
+  durationRef,
 ) => {
   const hasPermission = await requestPermissions();
   if (!hasPermission) {
@@ -21,7 +22,7 @@ export const startRecording = async (
       setFilePath(path);
       setIsRecording(true);
       console.log('Recording started at:', path);
-      Duration(setRecordTime);
+      Duration(setRecordTime, durationRef);
     } else {
       const stopPath = await AudioRecorderPlayer.stopRecorder();
       setIsRecording(false);
@@ -56,16 +57,21 @@ export const stopRecording = async (
   setFilePath,
   navigation,
   navigateToPlayer = true,
+  durationRef,
 ) => {
   try {
     const stopPath = await AudioRecorderPlayer.stopRecorder();
+    const finalTime = durationRef.current;
     setIsRecording(false);
     setIsPaused(false);
     setRecordTime('00:00:00');
     setFilePath(stopPath);
 
     if (navigateToPlayer && navigation) {
-      navigation.navigate('Player', { recordedFile: stopPath });
+      navigation.navigate('Player', {
+        recordedFile: stopPath,
+        duration: finalTime,
+      });
     }
     console.log('Recording stopped. Saved at:', stopPath);
     return stopPath;

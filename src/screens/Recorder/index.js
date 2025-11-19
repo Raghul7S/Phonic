@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
@@ -27,6 +27,7 @@ export default function Recorder() {
   const [recordTime, setRecordTime] = useState('00:00:00');
   const [filePath, setFilePath] = useState(null);
 
+  const durationRef = useRef('00:00:00');
   const scale = useSharedValue(1);
   const navigation = useNavigation();
 
@@ -49,7 +50,13 @@ export default function Recorder() {
   }));
 
   const handleStartRecording = () => {
-    startRecording(isRecording, setFilePath, setIsRecording, setRecordTime);
+    startRecording(
+      isRecording,
+      setFilePath,
+      setIsRecording,
+      setRecordTime,
+      durationRef,
+    );
   };
 
   const handlePauseRecording = () => {
@@ -63,6 +70,8 @@ export default function Recorder() {
       setRecordTime,
       setFilePath,
       navigation,
+      recordTime,
+      durationRef,
     );
   };
 
@@ -79,11 +88,11 @@ export default function Recorder() {
         <View style={[styles.controller, { top: 20 }]}>
           <Text style={styles.guide}>Press</Text>
           <Ionicons
-              name={isRecording === true ? 'square' : 'mic'}
-              size={15}
-              color="#fff"
-              style={{ marginHorizontal: 5 }}
-            />
+            name={isRecording === true ? 'square' : 'mic'}
+            size={15}
+            color="#fff"
+            style={{ marginHorizontal: 5 }}
+          />
           <Text style={styles.guide}>
             to {isRecording === true ? 'finish' : 'start'} recording
           </Text>

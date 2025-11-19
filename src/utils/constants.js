@@ -1,16 +1,16 @@
 import AudioRecorderPlayer from 'react-native-nitro-sound';
 
-export const Duration = setRecordTime => {
+export const Duration = (setRecordTime, durationRef) => {
   return AudioRecorderPlayer.addRecordBackListener(e => {
     const ms = e.currentPosition;
     const hours = Math.floor(ms / 3600000);
     const minutes = Math.floor((ms % 3600000) / 60000);
     const seconds = Math.floor((ms % 60000) / 1000);
-    setRecordTime(
-      `${String(hours).padStart(2, '0')}:${String(minutes).padStart(
-        2,
-        '0',
-      )}:${String(seconds).padStart(2, '0')}`,
-    );
+
+    const formatted = `${String(hours).padStart(2, '0')}:${String(
+      minutes,
+    ).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    setRecordTime(formatted);
+    durationRef.current = formatted;
   });
 };
